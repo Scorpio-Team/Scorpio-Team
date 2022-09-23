@@ -13,11 +13,11 @@
 
 # Content
 
-- team contains a photo of our team
-- robot contains photos of the robot from various angles
-- video contains a youtube link to a video of our vehicle running
-- schemes contains schematic diagrams of electronical components used in the building of our vehicle as well as how they connect
-- programs contains the source codes used for the robot  to function
+- **team** contains a photo of our team
+- **Poze Robot** contains photos of the robot from various angles
+- **video** contains a youtube link to a video of our vehicle running
+- **schema** contains schematic diagrams of electronical components used in the building of our vehicle as well as how they connect
+- **programs** contains the source codes used for the robot  to function
 
 # The Code 
 
