@@ -1,0 +1,191 @@
+#include "NewPing.h"
+#include <Servo.h>
+
+#define trigger_st 3
+#define echo_st 2
+#define trigger_dr 7
+#define echo_dr 6      
+#define max_distance 400
+
+
+unsigned long elapsedTime = 0;       
+unsigned long onTime;
+
+   int interval = 3000;
+   unsigned long previousMillis = 0; 
+   unsigned long currentMillis = 0;
+//motor
+ int motorSpeed = 0;
+ const int AIN1 = 13;           //control pin 1 on the motor driver for the right motor
+ const int AIN2 = 12;            //control pin 2 on the motor driver for the right motor
+ const int PWMA = 11;
+
+ int ok_st = 0;
+ int ok_dr = 0;
+
+ int viraj_dreapta = 0;
+ int viraj_stanga = 0;
+
+ int st,dr;
+NewPing sonar_st (trigger_st, echo_st, max_distance);
+NewPing sonar_dr (trigger_dr, echo_dr, max_distance);
+
+ float distance_st;
+ float distance_dr;
+
+const int buttonPin = 4; //button to turn the robot on and off
+int buttonState = 0;
+int ok = 1;
+int apasat = 0;
+
+double error = 0;
+double error_old = 0;
+double isum = 0;
+double kp = 3;
+double kd = 1.5;
+double ki = 0.000000001;
+double P,D,I;
+double directie;
+double distance;
+double distance_turn;
+
+const int driveTime = 40;
+const int drive_turn_Time = 40;
+
+ Servo myServo;
+ 
+ void setup()
+ {
+  Serial.begin (9600);
+  
+    
+    pinMode(AIN1, OUTPUT);
+    pinMode(AIN2, OUTPUT);
+    pinMode(PWMA, OUTPUT);
+    
+    motorSpeed = -240;
+    
+    myServo.attach(9); 
+    
+    pinMode(buttonPin, INPUT_PULLUP);
+
+ }
+
+void loop(){
+  motorSpeed = -240;  
+  buttonState = digitalRead(buttonPin);
+ // myServo.write(90);
+  if (buttonState == LOW && ok == 1)
+  {
+    ok=0;
+  }
+    
+  if(ok==0){     //if the switch is on...
+    currentMillis = millis();
+    LF();
+   // spinMotor(-5);
+  }
+   
+    
+   }
+   
+      
+     
+///50 milisec pe cm 
+
+
+   /*  if( st > dr )
+      viraj_stanga = 1;
+     else 
+      viraj_dreapta = 1;
+
+     if(viraj_stanga  == 1)i
+        myServo = 120;
+
+     if(viraj_dreapta == 1)
+        myServo = 60;
+        
+     delay(driveTime * distance.toInt());   */
+
+
+
+double LF(){
+    citire(st,dr);
+  while(st <100 && dr < 100){
+    spinMotor(motorSpeed);
+    citire(st,dr);
+   
+    error = dr - st;
+    P = kp * error;
+    D = kd * (error_old -  error);
+    I = ki * isum;
+    directie = 90 - (P + D );
+    
+    if(directie > 110   )
+      directie = 110  ;
+    else if (directie < 60)                                                                                                                                                                  
+       directie =  60 ;
+
+  
+    myServo.write(directie);
+    error_old = error;
+    isum = isum + error;
+    //Serial.println( directie);
+
+    if ((unsigned long)(currentMillis - previousMillis) >= interval) {
+      isum = 0;
+      previousMillis = currentMillis;
+    }
+   }
+  
+}
+
+void spinMotor(int motorSpeed)                       //function for driving the right motor
+  {
+    if (motorSpeed > 0)                                 //if the motor should drive forward (positive speed)
+    {
+      digitalWrite(AIN1, HIGH);                         //set pin 1 to high
+      digitalWrite(AIN2, LOW);                          //set pin 2 to low
+    }
+    else if (motorSpeed < 0)                            //if the motor should drive backward (negative speed)
+    {
+      digitalWrite(AIN1, LOW);                          //set pin 1 to low
+      digitalWrite(AIN2, HIGH);                         //set pin 2 to high
+    }
+    else                                                //if the motor should stop
+    {
+      digitalWrite(AIN1, LOW);                          //set pin 1 to low
+      digitalWrite(AIN2, LOW);                          //set pin 2 to low
+    }
+    analogWrite(PWMA, abs(motorSpeed));                 //now that the motor direction is set, drive it at the entered speed
+  }
+
+void citire(int &distance_st,int &distance_dr){
+  distance_st = sonar_st.ping_cm();
+  
+ //   Serial.print("stanga ");
+         if (distance_st >= 400 || distance_st <=2){
+             ok_st = 0;
+  //           Serial.println(distance_st);
+             delay(100);
+        }else {
+            ok_st = 1;
+      //      Serial.print(distance_st);
+      //      Serial.println(" ");
+            delay(100);
+        }
+        
+    distance_dr=sonar_dr.ping_cm();
+   
+   // Serial.print("dreapta ");
+       if (distance_dr >= 400 || distance_dr <=2){
+    //      Serial.println("out of range");
+          delay(100);
+          ok_dr = 0;
+       }else{
+           ok_dr = 1;
+      //     Serial.print(distance_dr);
+       //    Serial.println(" ");
+           delay(100);
+       }
+   }
